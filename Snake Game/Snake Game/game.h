@@ -20,6 +20,7 @@ class Game {
 	int input;
 	int number_of_blocks;
 	vector<COORD> locations_of_blocks;
+	vector<COORD> previous_locations;
 	char block = 254;
 	int number_of_rows;
 	int number_of_columns;
@@ -35,6 +36,9 @@ class Game {
 	void show_console_cursor(bool show_flag);
 	void set_cursor_position(COORD coord);
 	void move();
+	void crash();
+	void get_input();
+	void display();
 	void new_block();
 
 public:

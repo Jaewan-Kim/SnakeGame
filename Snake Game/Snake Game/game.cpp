@@ -16,43 +16,63 @@ void Game::start_game() {
 	new_block();
 	set_cursor_position(block_location);
 	cout << "O";
+	last_coord = locations_of_blocks[0];
 
 	while (!game_over) {
-		
-		if (kbhit()) {
-			switch (input = getch()) {
-			case KEY_UP:
-				direction = up;
-				break;
-			case KEY_DOWN:
-				direction = down;
-				break;
-			case KEY_RIGHT:
-				direction = right;
-				break;
-			case KEY_LEFT:
-				direction = left;
-				break;
-			}
-		}
-		set_cursor_position(locations_of_blocks[number_of_blocks-1]);
-		cout << "X";
 
+		
+		
+		
+
+		get_input();
 
 		move();
-		set_cursor_position(locations_of_blocks[0]);
-		cout << block;
-		
+
+		display();
 		
 		Sleep(100);
-
 
 	}
 
 }
 
+void Game::display() {
+	set_cursor_position(last_coord);
+	cout << " ";
+	set_cursor_position(locations_of_blocks[0]);
+	cout << block;
+	set_cursor_position(COORD{ (SHORT)22,(SHORT)number_of_rows + 2});
+	cout << number_of_blocks;
+}
+void Game::get_input() {
+	
+	if (kbhit()) {
+		switch (input = getch()) {
+		case KEY_UP:
+			if (direction != down)
+				direction = up;
+			break;
+		case KEY_DOWN:
+			if (direction != up)
+				direction = down;
+			break;
+		case KEY_RIGHT:
+			if (direction != left)
+				direction = right;
+			break;
+		case KEY_LEFT:
+			if (direction != right)
+				direction = left;
+			break;
+		}
+		return;
+	}
+
+
+}
 
 void Game::new_block() {
+	last_coord = locations_of_blocks[number_of_blocks - 1];
 	while (true) {
 		int x = rand() % number_of_columns + 1;
 		int y = rand() % number_of_rows + 1;
@@ -69,44 +89,9 @@ void Game::new_block() {
 }
 
 void Game::move() {
-	last_coord = locations_of_blocks[number_of_blocks - 1];
-	if (direction == right) {
-		if (locations_of_blocks[0].X == number_of_columns) {
-			game_over = true;
-		}
-		else {
-			for (COORD& c : locations_of_blocks) {
-				c.X = c.X +1;
-			}
-		}
-	}
-	else if (direction == left) {
-		if (locations_of_blocks[0].X == 1) {
-			game_over = true;
-		}
-		else {
-			for (COORD& c : locations_of_blocks) {
-				c.X = c.X - 1;
-			}
-		}
-	}
-	else if (direction == up) {
-		if (locations_of_blocks[0].Y == 1)
-			game_over = true;
-		else
-			for (COORD& c : locations_of_blocks) {
-				c.Y = c.Y -1;
-			}
-	}
-	else {
-		if (locations_of_blocks[0].Y == number_of_rows)
-			game_over = true;
-		else
-			for (COORD& c : locations_of_blocks)
-				c.Y = c.Y +1;
-	}
-
+	previous_locations = locations_of_blocks;
 	if (locations_of_blocks[0].X == block_location.X && locations_of_blocks[0].Y == block_location.Y) {
+
 		new_block();
 		set_cursor_position(block_location);
 		cout << "O";
@@ -114,9 +99,56 @@ void Game::move() {
 		locations_of_blocks.push_back(last_coord);
 
 	}
+	last_coord.X = locations_of_blocks[number_of_blocks - 1].X;
+	last_coord.Y = locations_of_blocks[number_of_blocks - 1].Y;
+	if (direction == right) {
+		if (locations_of_blocks[0].X == number_of_columns) {
+			game_over = true;
+		}
+		else {
+			locations_of_blocks[0].X++;
+		}
+	}
+	else if (direction == left) {
+		if (locations_of_blocks[0].X == 1) {
+			game_over = true;
+		}
+		else {
+			locations_of_blocks[0].X--;
+
+		}
+	}
+	else if (direction == up) {
+		if (locations_of_blocks[0].Y == 1)
+			game_over = true;
+		else
+			locations_of_blocks[0].Y--;
+
+	}
+	else {
+		if (locations_of_blocks[0].Y == number_of_rows)
+			game_over = true;
+		else		
+			locations_of_blocks[0].Y++;
+
+	}
+
+	for (int i = 1; i < number_of_blocks; i++) {
+		locations_of_blocks[i] = previous_locations[i - 1];
+	}
+
+	crash();
+	
 }
 
-
+void Game::crash() {
+	for (int i = 1; i < number_of_blocks; i++) {
+		if (locations_of_blocks[0].X == locations_of_blocks[i].X && locations_of_blocks[0].Y == locations_of_blocks[i].Y) {
+			game_over = true;
+			return;
+		}
+	}
+}
 void Game::draw_board() {
 	for (int i = 0; i < number_of_columns+2; i++) {
 		cout << block;
@@ -132,6 +164,8 @@ void Game::draw_board() {
 	for (int i = 0; i < number_of_columns + 2; i++) {
 		cout << block;
 	}
+	cout << endl;
+	cout << "The current score is: ";
 
 }
 
